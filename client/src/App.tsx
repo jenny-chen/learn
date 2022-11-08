@@ -1,6 +1,5 @@
 import React, { ChangeEvent, useEffect, useState } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import styled from 'styled-components';
 
 function App() {
   const [apiResponse, setApiResponse] = useState("");
@@ -8,7 +7,9 @@ function App() {
   const [pdf, setPdf] = useState<File>();
   const [responseHeaders, setResponseHeaders] = useState();
   const [text, setText] = useState();
+
   const [textAreaValue, setTextAreaValue] = useState("");
+  const [parsedText, setParsedText] = useState<String[][]>([]);
 
   function callAPI() {
       fetch("http://localhost:9000/testAPI")
@@ -59,8 +60,6 @@ function App() {
           pdfText,
           ...headers,
       });
-
-      console.log(JSON.stringify(responseHeaders, null, '\t'));
     }
   }
 
@@ -81,6 +80,41 @@ function App() {
     const { cst } = await response.json();
 
     console.log("cst: ", JSON.stringify(cst));
+    setParsedText([]);
+    var temp: string[] = [];
+
+
+    // paragraphs in cst
+    for (var i = 0; i < cst.children.length; i++) {
+      // sentences
+      for (var j = 0; j < cst.children[i].children.length; j++) {
+        console.log("length: ", cst.children[i].children.length)
+        console.log("j: ", j)
+        if (!cst.children[i].children[j].children) {
+          continue
+        }
+        // words
+        for (var k = 0; k < cst.children[i].children[j].children.length; k++) {
+          var node = cst.children[i].children[j].children[k]
+          if (node.type === "WordNode") {
+            for (var l = 0; l < node.children.length; l++) {
+              temp.push(node.children[l].value)
+            }
+          } else {
+            temp.push(node.value)
+          }
+          console.log(temp)
+        }
+        console.log("done words")
+      }
+      console.log("done sentences")
+      setParsedText([...parsedText, temp])
+      console.log("temp: ", temp)
+      temp = [];
+    }
+
+    console.log("parsedText: ", parsedText)
+
   }
 
   const prettyJson = responseHeaders && JSON.stringify(responseHeaders, null, '\t');
@@ -89,31 +123,47 @@ function App() {
   console.log("pdfText");
   console.log(pdfText);
 
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p className="App-intro">{apiResponse}</p>
-        <button onClick={onClickHandler}>Send file</button>
-        <input type="file" onChange={handleInputOnChange}/>
-        <div>
-          <h2>json text here</h2>
-          <p>{prettyJson}</p>
-        </div>
+    <Container>
+      {/* FOR WHEN WE CAN PROPERLY PARSE JAPANESE PDFS */}
+      {/* <p>{apiResponse}</p>
+      <button onClick={onClickHandler}>Send file</button>
+      <input type="file" onChange={handleInputOnChange}/>
+      <div>
+        <h2>json text here</h2>
+        <p>{prettyJson}</p>
+      </div> */}
 
-        <div>
-          <h2>or put in own text</h2>
-          <textarea value={textAreaValue} onChange={(e) => setTextAreaValue(e.target.value)} />
-          <button onClick={textOnClickHandler}>Send text</button>
-        </div>
+      <h2>Enter japanese text</h2>
+      <TextArea value={textAreaValue} onChange={(e) => setTextAreaValue(e.target.value)} />
+      <button onClick={textOnClickHandler}>Send text</button>
 
-        <div>
-          <h2>text here</h2>
-          <p>{pdfText}</p>
-        </div>
-      </header>
-    </div>
+      <h2>Parsed text</h2>
+      <p>{pdfText}</p>
+      {parsedText.map((s, i) => {
+        return (
+          <p>{s}</p>
+        )
+      })}
+
+    </Container>
   );
 }
+
+const Container = styled.div`
+  width: 80%;
+  max-width: 800px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+const TextArea = styled.textarea`
+  width: 50%;
+  height: 250px;
+  margin-bottom: 24px;
+`;
 
 export default App;

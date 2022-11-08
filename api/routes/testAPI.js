@@ -9,13 +9,14 @@ var upload = multer();
 var ParseJapanese = require('parse-japanese')
 var japanese = new ParseJapanese()
 
+// test that the parser is working
 var text = '1 これは前段です。これは中段（２文の場合は後段。）です。これは後段です。\n'
 
 japanese.parse(text, (cst) => {
   console.log(cst)
 })
 
-
+// test that the api is working
 router.get("/", function(req, res, next) {
     res.send("API is working properly");
 });
@@ -31,20 +32,8 @@ router.post('/parse-japanese', (request, response) => {
   })
 })
 
-router.post('/binary-file', (request, response) => {
-  let data = Buffer.from('');
 
-  request.on('data', (chunk) => {
-      data = Buffer.concat([data, chunk]);
-  });
-  request.on('end', () => {
-      response.send({
-          headers: request.headers,
-          data
-      });
-  });
-})
-
+// FOR PARSING JAPANESE PDFS -> RIGHT NOW IT ONLY PARSES ENGLISH LETTERS
 const cpUpload = upload.fields (
   [
     {name: 'someFile', maxCount: 1},
