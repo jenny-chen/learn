@@ -1,3 +1,4 @@
+
 var express = require("express");
 var multer = require("multer");
 var pdf = require('pdf-parse')
@@ -5,9 +6,30 @@ var pdf = require('pdf-parse')
 var router = express.Router();
 var upload = multer();
 
+var ParseJapanese = require('parse-japanese')
+var japanese = new ParseJapanese()
+
+var text = '1 これは前段です。これは中段（２文の場合は後段。）です。これは後段です。\n'
+
+japanese.parse(text, (cst) => {
+  console.log(cst)
+})
+
+
 router.get("/", function(req, res, next) {
     res.send("API is working properly");
 });
+
+router.post('/parse-japanese', (request, response) => {
+  console.log("request: ", request)
+  console.log("request.body: ", request.body)
+  let text = request.body.text;
+
+  japanese.parse(text, (cst) => {
+    console.log(cst)
+    response.send({cst})
+  })
+})
 
 router.post('/binary-file', (request, response) => {
   let data = Buffer.from('');

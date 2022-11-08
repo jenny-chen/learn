@@ -15,6 +15,7 @@
     "jade": "~1.11.0",
     "morgan": "~1.9.1",
     "multer": "^1.4.5-lts.1",
+    "parse-japanese": "^0.1.0",
     "pdf-parse": "^1.1.1"
   }
 }

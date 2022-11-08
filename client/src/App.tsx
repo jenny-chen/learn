@@ -1,7 +1,6 @@
 import React, { ChangeEvent, useEffect, useState } from 'react';
 import logo from './logo.svg';
 import './App.css';
-import { setTextRange } from 'typescript';
 
 function App() {
   const [apiResponse, setApiResponse] = useState("");
@@ -9,6 +8,7 @@ function App() {
   const [pdf, setPdf] = useState<File>();
   const [responseHeaders, setResponseHeaders] = useState();
   const [text, setText] = useState();
+  const [textAreaValue, setTextAreaValue] = useState("");
 
   function callAPI() {
       fetch("http://localhost:9000/testAPI")
@@ -65,7 +65,22 @@ function App() {
   }
 
   const textOnClickHandler = async () => {
+    const formData = new FormData();
+    formData.append("text", textAreaValue);
 
+    const requestOptions = {
+      method: 'POST',
+      headers: { "Content-Type": "application/json" }, 
+      body: JSON.stringify({"text": textAreaValue}),
+    };
+
+    console.log("requestOptions: ", requestOptions);
+
+    const response = await fetch('http://localhost:9000/testAPI/parse-japanese', requestOptions);
+
+    const { cst } = await response.json();
+
+    console.log("cst: ", JSON.stringify(cst));
   }
 
   const prettyJson = responseHeaders && JSON.stringify(responseHeaders, null, '\t');
@@ -88,9 +103,10 @@ function App() {
 
         <div>
           <h2>or put in own text</h2>
-          <textarea value="" onChange={() => console.log("hello")} />
+          <textarea value={textAreaValue} onChange={(e) => setTextAreaValue(e.target.value)} />
           <button onClick={textOnClickHandler}>Send text</button>
         </div>
+
         <div>
           <h2>text here</h2>
           <p>{pdfText}</p>
